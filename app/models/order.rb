@@ -8,13 +8,10 @@ class Order < ApplicationRecord
 
   validates :customer, presence: true
 
-  before_save :calculate_total
-
-  def calculate_total
-    self.total = order_items.sum { |item| item.quantity * item.unit_price }
-  end
+  after_save :recalculate_total!
 
   def recalculate_total!
-    update!(total: order_items.sum { |item| item.quantity * item.unit_price })
+    calculated = order_items.reload.sum { |item| item.quantity.to_i * item.unit_price.to_f }
+    update_column(:total, calculated) if total.to_f != calculated
   end
 end

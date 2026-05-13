@@ -2,8 +2,23 @@ class OrdersController < ApplicationController
   before_action :set_order, only: %i[show edit update destroy complete cancel]
 
   def index
+    @period = params[:period] || "all"
     @orders = Order.includes(:customer).order(created_at: :desc)
     @orders = @orders.where(status: params[:status]) if params[:status].present?
+
+    case @period
+    when "day"
+      @orders = @orders.where(created_at: Time.current.beginning_of_day..Time.current.end_of_day)
+    when "week"
+      @orders = @orders.where(created_at: Time.current.beginning_of_week..Time.current.end_of_week)
+    when "month"
+      @orders = @orders.where(created_at: Time.current.beginning_of_month..Time.current.end_of_month)
+    end
+
+    @total_period = @orders.completed.sum(:total)
+    @count_completed = @orders.completed.count
+    @count_pending = @orders.pending.count
+    @recent_orders = @orders.limit(5)
     @pagy, @orders = pagy(@orders, items: 20)
   end
 

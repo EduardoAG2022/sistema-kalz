@@ -1,13 +1,20 @@
 <div class="item-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-  <%= f.collection_select :product_id, @products, :id, :name,
-    { prompt: "Selecciona producto" },
-    class: "product-select flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
-    data: { products: @products.map { |p| { id: p.id, price: p.sale_price } }.to_json } %>
+  <select name="<%= f.object_name %>[product_id]" class="product-select flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <option value="">Selecciona producto</option>
+    <% @products.each do |p| %>
+      <option value="<%= p.id %>" data-price="<%= p.sale_price %>" <%= 'selected' if f.object.product_id == p.id %>>
+        <%= p.name %> — $<%= p.sale_price %>
+      </option>
+    <% end %>
+  </select>
+  <input type="hidden" name="<%= f.object_name %>[product_id]" class="product-id-input" value="<%= f.object.product_id %>">
   <%= f.number_field :quantity, min: 1, class: "item-qty w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "Cant." %>
   <%= f.hidden_field :unit_price, class: "item-price" %>
-  <span class="item-subtotal text-sm font-medium text-gray-700 w-20 text-right">$0.00</span>
+  <span class="item-subtotal text-sm font-medium text-gray-700 w-24 text-right">
+    $<%= (f.object.unit_price.to_f * f.object.quantity.to_i).round(2) %>
+  </span>
   <%= f.hidden_field :_destroy %>
-  <button type="button" class="remove-item text-gray-400 hover:text-red-500">
+  <button type="button" class="remove-item text-gray-400 hover:text-red-500 flex-shrink-0">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
   </button>
 </div>

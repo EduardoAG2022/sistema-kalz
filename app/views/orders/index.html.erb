@@ -9,13 +9,39 @@
     <% end %>
   </div>
 
-  <div class="flex gap-2">
-    <%= link_to "Todos", orders_path, class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status].blank? ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
-    <%= link_to "Pendiente", orders_path(status: "pending"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'pending' ? 'bg-yellow-500 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
-    <%= link_to "Completado", orders_path(status: "completed"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'completed' ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
-    <%= link_to "Cancelado", orders_path(status: "cancelled"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'cancelled' ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+  <%# Filtros de período %>
+  <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex gap-1 bg-gray-100 rounded-lg p-1">
+      <%= link_to "Todo", orders_path(status: params[:status]), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'all' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to "Hoy", orders_path(period: "day", status: params[:status]), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'day' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to "Semana", orders_path(period: "week", status: params[:status]), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'week' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to "Mes", orders_path(period: "month", status: params[:status]), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'month' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+    </div>
+    <div class="flex gap-1 ml-2">
+      <%= link_to "Todos", orders_path(period: params[:period]), class: "px-3 py-1.5 rounded-lg text-xs font-medium #{params[:status].blank? ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+      <%= link_to "Pendiente", orders_path(period: params[:period], status: "pending"), class: "px-3 py-1.5 rounded-lg text-xs font-medium #{params[:status] == 'pending' ? 'bg-yellow-500 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+      <%= link_to "Completado", orders_path(period: params[:period], status: "completed"), class: "px-3 py-1.5 rounded-lg text-xs font-medium #{params[:status] == 'completed' ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+      <%= link_to "Cancelado", orders_path(period: params[:period], status: "cancelled"), class: "px-3 py-1.5 rounded-lg text-xs font-medium #{params[:status] == 'cancelled' ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+    </div>
   </div>
 
+  <%# Tarjetas de totales %>
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 mb-1">Facturado</p>
+      <p class="text-xl font-bold text-gray-900">$<%= number_with_delimiter(@total_period.to_f.round(2)) %></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 mb-1">Completados</p>
+      <p class="text-xl font-bold text-green-600"><%= @count_completed %></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 mb-1">Pendientes</p>
+      <p class="text-xl font-bold text-yellow-600"><%= @count_pending %></p>
+    </div>
+  </div>
+
+  <%# Tabla %>
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
     <table class="w-full text-sm">
       <thead>
@@ -42,16 +68,14 @@
               </span>
             </td>
             <td class="px-4 py-3">
-              <div class="flex items-center justify-end gap-2">
-                <%= link_to order_path(order), class: "p-1.5 text-gray-400 hover:text-indigo-600 rounded" do %>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                <% end %>
-              </div>
+              <%= link_to order_path(order), class: "p-1.5 text-gray-400 hover:text-indigo-600 rounded" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <% end %>
             </td>
           </tr>
         <% end %>
         <% if @orders.empty? %>
-          <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay pedidos. <%= link_to "Crea el primero", new_order_path, class: "text-indigo-600 hover:underline" %>.</td></tr>
+          <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay pedidos en este período. <%= link_to "Crear pedido", new_order_path, class: "text-indigo-600 hover:underline" %>.</td></tr>
         <% end %>
       </tbody>
     </table>

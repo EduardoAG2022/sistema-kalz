@@ -17,10 +17,14 @@ class CustomersController < ApplicationController
 
   def create
     @customer = Customer.new(customer_params)
-    if @customer.save
-      redirect_to customers_path, notice: "Cliente creado correctamente."
-    else
-      render :new, status: :unprocessable_entity
+    respond_to do |format|
+      if @customer.save
+        format.html { redirect_to customers_path, notice: "Cliente creado correctamente." }
+        format.json { render json: { id: @customer.id, name: @customer.name } }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @customer.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
