@@ -1,0 +1,123 @@
+<%= form_with model: order, class: "space-y-5", data: { controller: "order-form" } do |f| %>
+  <% if order.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+      <ul class="list-disc pl-4 space-y-1">
+        <% order.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :customer_id, "Cliente", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.collection_select :customer_id, @customers, :id, :name,
+      { prompt: "Selecciona un cliente" },
+      class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+  </div>
+
+  <div>
+    <%= f.label :notes, "Notas del pedido", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_area :notes, rows: 2, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "Instrucciones especiales, dirección de entrega..." %>
+  </div>
+
+  <div>
+    <div class="flex items-center justify-between mb-2">
+      <label class="block text-sm font-medium text-gray-700">Productos</label>
+    </div>
+
+    <div id="order-items" class="space-y-2">
+      <%= f.fields_for :order_items do |item_f| %>
+        <%= render "order_item_fields", f: item_f %>
+      <% end %>
+    </div>
+
+    <button type="button" id="add-item-btn"
+      class="mt-3 inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Agregar producto
+    </button>
+  </div>
+
+  <div id="order-total" class="text-right text-lg font-bold text-gray-800 border-t border-gray-200 pt-3">
+    Total: $<span id="total-amount">0.00</span>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit order.new_record? ? "Crear pedido" : "Guardar cambios", class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg cursor-pointer" %>
+    <%= link_to "Cancelar", orders_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+<% end %>
+
+<template id="item-template">
+  <div class="item-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+    <select name="order[order_items_attributes][TEMPLATE_INDEX][product_id]" class="product-select flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <option value="">Selecciona producto</option>
+      <% @products.each do |p| %>
+        <option value="<%= p.id %>" data-price="<%= p.sale_price %>"><%= p.name %> — $<%= p.sale_price %></option>
+      <% end %>
+    </select>
+    <input type="number" name="order[order_items_attributes][TEMPLATE_INDEX][quantity]" value="1" min="1"
+      class="item-qty w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Cant.">
+    <input type="hidden" name="order[order_items_attributes][TEMPLATE_INDEX][unit_price]" class="item-price" value="0">
+    <span class="item-subtotal text-sm font-medium text-gray-700 w-20 text-right">$0.00</span>
+    <button type="button" class="remove-item text-gray-400 hover:text-red-500">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+</template>
+
+<script>
+  (function() {
+    let itemIndex = <%= order.order_items.size %>;
+
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll('.item-row').forEach(function(row) {
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+        const subtotal = price * qty;
+        total += subtotal;
+        row.querySelector('.item-subtotal').textContent = '$' + subtotal.toFixed(2);
+      });
+      document.getElementById('total-amount').textContent = total.toFixed(2);
+    }
+
+    document.getElementById('add-item-btn').addEventListener('click', function() {
+      const template = document.getElementById('item-template').innerHTML.replace(/TEMPLATE_INDEX/g, itemIndex++);
+      const container = document.getElementById('order-items');
+      const div = document.createElement('div');
+      div.innerHTML = template;
+      const row = div.firstElementChild;
+      container.appendChild(row);
+      bindRow(row);
+    });
+
+    function bindRow(row) {
+      const select = row.querySelector('.product-select');
+      const qty = row.querySelector('.item-qty');
+      const priceInput = row.querySelector('.item-price');
+
+      select.addEventListener('change', function() {
+        const opt = select.selectedOptions[0];
+        const price = parseFloat(opt.dataset.price) || 0;
+        priceInput.value = price;
+        updateTotal();
+      });
+
+      qty.addEventListener('input', updateTotal);
+
+      row.querySelector('.remove-item').addEventListener('click', function() {
+        const destroyInput = row.querySelector('input[name*="_destroy"]');
+        if (destroyInput) {
+          destroyInput.value = '1';
+          row.style.display = 'none';
+        } else {
+          row.remove();
+        }
+        updateTotal();
+      });
+    }
+
+    document.querySelectorAll('.item-row').forEach(bindRow);
+    updateTotal();
+  })();
+</script>

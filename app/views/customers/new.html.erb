@@ -1,0 +1,12 @@
+<% content_for :title, "Nuevo cliente — Kalz" %>
+<div class="max-w-2xl space-y-5">
+  <div class="flex items-center gap-3">
+    <%= link_to customers_path, class: "text-gray-400 hover:text-gray-600" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    <% end %>
+    <h1 class="text-2xl font-bold text-gray-900">Nuevo cliente</h1>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <%= render "form", customer: @customer %>
+  </div>
+</div>

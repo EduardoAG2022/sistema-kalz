@@ -1,0 +1,78 @@
+<% content_for :title, "Pedido ##{@order.id} — Kalz" %>
+
+<div class="space-y-5 max-w-3xl">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <%= link_to orders_path, class: "text-gray-400 hover:text-gray-600" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      <% end %>
+      <h1 class="text-2xl font-bold text-gray-900">Pedido #<%= @order.id %></h1>
+      <span class="px-2.5 py-1 rounded-full text-xs font-medium
+        <%= @order.completed? ? 'bg-green-100 text-green-700' : @order.cancelled? ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+        <%= @order.status.capitalize %>
+      </span>
+    </div>
+    <div class="flex gap-2">
+      <% if @order.pending? %>
+        <%= button_to complete_order_path(@order), method: :patch, class: "inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+          ✓ Completar
+        <% end %>
+        <%= button_to cancel_order_path(@order), method: :patch, data: { turbo_confirm: "¿Cancelar este pedido?" }, class: "inline-flex items-center gap-1.5 border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium px-4 py-2 rounded-lg" do %>
+          Cancelar
+        <% end %>
+        <%= link_to edit_order_path(@order), class: "border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg" %>Editar<% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-2">Cliente</p>
+      <p class="font-semibold text-gray-900"><%= @order.customer.name %></p>
+      <p class="text-sm text-gray-500 mt-0.5"><%= @order.customer.email %></p>
+      <p class="text-sm text-gray-500"><%= @order.customer.phone %></p>
+      <% if @order.customer.address.present? %>
+        <p class="text-sm text-gray-500 mt-1"><%= @order.customer.address %></p>
+      <% end %>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-2">Detalles</p>
+      <p class="text-sm text-gray-700">Fecha: <span class="font-medium"><%= @order.created_at.strftime("%d de %B, %Y") %></span></p>
+      <% if @order.notes.present? %>
+        <p class="text-sm text-gray-700 mt-2">Notas: <span class="font-medium"><%= @order.notes %></span></p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-800">Productos</h2>
+    </div>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 border-b border-gray-100">
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Producto</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Precio unit.</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Cantidad</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        <% @order_items.each do |item| %>
+          <tr>
+            <td class="px-4 py-3 font-medium text-gray-900"><%= item.product.name %></td>
+            <td class="px-4 py-3 text-right text-gray-700">$<%= number_with_delimiter(item.unit_price) %></td>
+            <td class="px-4 py-3 text-right text-gray-700"><%= item.quantity %></td>
+            <td class="px-4 py-3 text-right font-medium text-gray-900">$<%= number_with_delimiter(item.subtotal) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr class="bg-gray-50 border-t border-gray-200">
+          <td colspan="3" class="px-4 py-3 text-right font-semibold text-gray-700">Total</td>
+          <td class="px-4 py-3 text-right font-bold text-xl text-gray-900">$<%= number_with_delimiter(@order.total.to_f.round(2)) %></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>

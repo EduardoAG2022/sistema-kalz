@@ -1,0 +1,109 @@
+<% content_for :title, "Dashboard — Kalz" %>
+
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+    <span class="text-sm text-gray-500"><%= Date.today.strftime("%d de %B, %Y") %></span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-1">Total Facturado</p>
+      <p class="text-2xl font-bold text-gray-900">$<%= number_with_delimiter(@total_revenue.to_f.round(2)) %></p>
+      <p class="text-xs text-gray-400 mt-1">pedidos completados</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-1">Pedidos</p>
+      <p class="text-2xl font-bold text-gray-900"><%= @orders_count %></p>
+      <p class="text-xs text-gray-400 mt-1">completados</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-1">Productos</p>
+      <p class="text-2xl font-bold text-gray-900"><%= @products_count %></p>
+      <p class="text-xs text-gray-400 mt-1">en inventario</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500 mb-1">Clientes</p>
+      <p class="text-2xl font-bold text-gray-900"><%= @customers_count %></p>
+      <p class="text-xs text-gray-400 mt-1">registrados</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-gray-800">Ventas</h2>
+      <div class="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <%= link_to "Día", dashboard_path(period: "day"), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'day' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to "Semana", dashboard_path(period: "week"), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'week' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to "Mes", dashboard_path(period: "month"), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'month' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to "Año", dashboard_path(period: "year"), class: "px-3 py-1 rounded-md text-xs font-medium #{@period == 'year' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}" %>
+      </div>
+    </div>
+    <%= line_chart @sales_chart_data, height: "260px", colors: ["#4f46e5"], curve: false, points: false, legend: false, prefix: "$" %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <h2 class="font-semibold text-gray-800 mb-4">Productos más vendidos</h2>
+      <% if @top_products_data.any? %>
+        <%= bar_chart @top_products_data, height: "220px", colors: ["#4f46e5"], legend: false %>
+      <% else %>
+        <div class="flex items-center justify-center h-40 text-gray-400 text-sm">Sin datos aún</div>
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <h2 class="font-semibold text-gray-800 mb-4">Alertas de stock</h2>
+      <% if @low_stock_products.any? %>
+        <div class="space-y-3">
+          <% @low_stock_products.each do |product| %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full <%= product.out_of_stock? ? 'bg-red-500' : 'bg-yellow-400' %>"></div>
+                <span class="text-sm text-gray-700"><%= product.name %></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium <%= product.out_of_stock? ? 'text-red-600' : 'text-yellow-600' %>">
+                  <%= product.stock %> uds.
+                </span>
+                <%= link_to "Editar", edit_product_path(product), class: "text-xs text-indigo-600 hover:underline" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="flex items-center justify-center h-20 text-gray-400 text-sm">
+          ✓ Todo el stock está en niveles normales
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-800">Pedidos recientes</h2>
+      <%= link_to "Ver todos", orders_path, class: "text-sm text-indigo-600 hover:underline" %>
+    </div>
+    <% if @recent_orders.any? %>
+      <div class="divide-y divide-gray-50">
+        <% @recent_orders.each do |order| %>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <p class="text-sm font-medium text-gray-800"><%= order.customer.name %></p>
+              <p class="text-xs text-gray-400"><%= order.created_at.strftime("%d %b %Y") %></p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-sm font-medium text-gray-900">$<%= number_with_delimiter(order.total.to_f.round(2)) %></span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                <%= order.completed? ? 'bg-green-100 text-green-700' : order.cancelled? ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+                <%= order.status.capitalize %>
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-5 py-10 text-center text-gray-400 text-sm">No hay pedidos aún</div>
+    <% end %>
+  </div>
+</div>

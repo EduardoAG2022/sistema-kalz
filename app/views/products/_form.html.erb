@@ -1,0 +1,60 @@
+<%= form_with model: product, class: "space-y-5" do |f| %>
+  <% if product.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+      <ul class="list-disc pl-4 space-y-1">
+        <% product.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Nombre del producto", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :name, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "Ej: Camiseta azul talla M" %>
+  </div>
+
+  <div>
+    <%= f.label :description, "Descripción", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_area :description, rows: 3, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "Descripción opcional..." %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :purchase_price, "Precio de compra ($)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :purchase_price, step: 0.01, min: 0, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "0.00" %>
+    </div>
+    <div>
+      <%= f.label :sale_price, "Precio de venta ($)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :sale_price, step: 0.01, min: 0, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "0.00" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :stock, "Unidades en stock", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :stock, min: 0, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+    </div>
+    <div>
+      <%= f.label :min_stock, "Alerta de stock mínimo", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :min_stock, min: 0, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      <p class="text-xs text-gray-400 mt-1">Recibirás alerta cuando el stock baje de este número</p>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :photo, "Foto del producto", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <% if product.photo.attached? %>
+      <div class="flex items-center gap-3 mb-2">
+        <%= image_tag product.photo, class: "w-16 h-16 rounded-lg object-cover" %>
+        <span class="text-xs text-gray-500">Foto actual (sube una nueva para reemplazar)</span>
+      </div>
+    <% end %>
+    <%= f.file_field :photo, accept: "image/*", class: "w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit product.new_record? ? "Crear producto" : "Guardar cambios", class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg cursor-pointer" %>
+    <%= link_to "Cancelar", products_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+<% end %>

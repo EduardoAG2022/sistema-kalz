@@ -1,0 +1,83 @@
+<% content_for :title, "Inventario — Kalz" %>
+
+<div class="space-y-5">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Inventario</h1>
+    <%= link_to new_product_path, class: "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nuevo producto
+    <% end %>
+  </div>
+
+  <%= form_with url: products_path, method: :get, class: "flex gap-3" do |f| %>
+    <div class="relative flex-1 max-w-sm">
+      <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+      <%= f.text_field :search, value: params[:search], placeholder: "Buscar producto...", class: "w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+    </div>
+    <%= f.submit "Buscar", class: "px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg cursor-pointer" %>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 border-b border-gray-200">
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Producto</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Precio compra</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Precio venta</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Margen</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Stock</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        <% @products.each do |product| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <% if product.photo.attached? %>
+                  <%= image_tag product.photo, class: "w-10 h-10 rounded-lg object-cover bg-gray-100" %>
+                <% else %>
+                  <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  </div>
+                <% end %>
+                <div>
+                  <p class="font-medium text-gray-900"><%= product.name %></p>
+                  <p class="text-xs text-gray-400 truncate max-w-xs"><%= product.description %></p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right text-gray-700">$<%= number_with_delimiter(product.purchase_price) %></td>
+            <td class="px-4 py-3 text-right text-gray-700">$<%= number_with_delimiter(product.sale_price) %></td>
+            <td class="px-4 py-3 text-right">
+              <span class="font-medium text-green-600"><%= product.margin %>%</span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                <%= product.out_of_stock? ? 'bg-red-100 text-red-700' : product.low_stock? ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700' %>">
+                <span class="w-1.5 h-1.5 rounded-full
+                  <%= product.out_of_stock? ? 'bg-red-500' : product.low_stock? ? 'bg-yellow-500' : 'bg-green-500' %>"></span>
+                <%= product.stock %> uds.
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center justify-end gap-2">
+                <%= link_to edit_product_path(product), class: "p-1.5 text-gray-400 hover:text-indigo-600 rounded" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <% end %>
+                <%= button_to product_path(product), method: :delete, data: { turbo_confirm: "¿Eliminar #{product.name}?" }, class: "p-1.5 text-gray-400 hover:text-red-600 rounded" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        <% if @products.empty? %>
+          <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay productos. <%= link_to "Agrega el primero", new_product_path, class: "text-indigo-600 hover:underline" %>.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+</div>

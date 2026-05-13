@@ -1,0 +1,74 @@
+<% content_for :title, "#{@customer.name} — Kalz" %>
+<div class="space-y-5">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <%= link_to customers_path, class: "text-gray-400 hover:text-gray-600" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      <% end %>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @customer.name %></h1>
+    </div>
+    <div class="flex gap-2">
+      <%= link_to new_order_path(customer_id: @customer.id), class: "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Nuevo pedido
+      <% end %>
+      <%= link_to edit_customer_path(@customer), class: "inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg" do %>
+        Editar
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500">Email</p>
+      <p class="font-medium text-gray-900 mt-1"><%= @customer.email.present? ? @customer.email : "—" %></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500">Teléfono</p>
+      <p class="font-medium text-gray-900 mt-1"><%= @customer.phone.present? ? @customer.phone : "—" %></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500">Dirección</p>
+      <p class="font-medium text-gray-900 mt-1"><%= @customer.address.present? ? @customer.address : "—" %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500">Pedidos completados</p>
+      <p class="text-3xl font-bold text-gray-900 mt-1"><%= @customer.orders_count %></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <p class="text-sm text-gray-500">Total gastado</p>
+      <p class="text-3xl font-bold text-indigo-600 mt-1">$<%= number_with_delimiter(@customer.total_spent.to_f.round(2)) %></p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-800">Historial de pedidos</h2>
+    </div>
+    <% if @orders.any? %>
+      <div class="divide-y divide-gray-50">
+        <% @orders.each do |order| %>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <p class="text-sm font-medium text-gray-800">#<%= order.id %></p>
+              <p class="text-xs text-gray-400"><%= order.created_at.strftime("%d %b %Y") %> · <%= order.order_items.sum(:quantity) %> productos</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-sm font-medium text-gray-900">$<%= number_with_delimiter(order.total.to_f.round(2)) %></span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                <%= order.completed? ? 'bg-green-100 text-green-700' : order.cancelled? ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+                <%= order.status.capitalize %>
+              </span>
+              <%= link_to "Ver", order_path(order), class: "text-xs text-indigo-600 hover:underline" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-5 py-8 text-center text-gray-400 text-sm">No hay pedidos aún</div>
+    <% end %>
+  </div>
+</div>
