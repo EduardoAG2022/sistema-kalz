@@ -10,10 +10,10 @@
   </div>
 
   <div class="flex gap-2">
-    <%= link_to orders_path, class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status].blank? ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>Todos<% end %>
-    <%= link_to orders_path(status: "pending"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'pending' ? 'bg-yellow-500 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>Pendiente<% end %>
-    <%= link_to orders_path(status: "completed"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'completed' ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>Completado<% end %>
-    <%= link_to orders_path(status: "cancelled"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'cancelled' ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>Cancelado<% end %>
+    <%= link_to "Todos", orders_path, class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status].blank? ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+    <%= link_to "Pendiente", orders_path(status: "pending"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'pending' ? 'bg-yellow-500 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+    <%= link_to "Completado", orders_path(status: "completed"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'completed' ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+    <%= link_to "Cancelado", orders_path(status: "cancelled"), class: "px-3 py-1.5 rounded-lg text-sm font-medium #{params[:status] == 'cancelled' ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
   </div>
 
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
