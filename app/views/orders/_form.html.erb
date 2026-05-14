@@ -31,7 +31,7 @@
         <button type="button" id="save-new-customer" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Guardar y seleccionar</button>
         <button type="button" id="cancel-new-customer" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Cancelar</button>
       </div>
-      <p id="nc-error" class="text-xs text-red-600 hidden">El nombre es requerido.</p>
+      <p id="nc-error" class="text-xs text-red-600 hidden"></p>
     </div>
   </div>
 
@@ -157,14 +157,14 @@
     saveBtn.addEventListener('click', function() {
       const name = document.getElementById('nc-name').value.trim();
       const error = document.getElementById('nc-error');
-      if (!name) { error.classList.remove('hidden'); return; }
+      if (!name) { error.textContent = 'El nombre es requerido.'; error.classList.remove('hidden'); return; }
       error.classList.add('hidden');
       saveBtn.textContent = 'Guardando...';
       saveBtn.disabled = true;
 
-      fetch('/customers', {
+      fetch('/customers.json', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
         body: JSON.stringify({ customer: {
           name: name,
           phone: document.getElementById('nc-phone').value,
@@ -172,21 +172,30 @@
           address: document.getElementById('nc-address').value
         }})
       })
-      .then(r => r.json())
-      .then(data => {
-        if (data.id) {
+      .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+      .then(function(res) {
+        saveBtn.textContent = 'Guardar y seleccionar';
+        saveBtn.disabled = false;
+        if (res.ok && res.data.id) {
           const opt = document.createElement('option');
-          opt.value = data.id;
-          opt.textContent = data.name;
+          opt.value = res.data.id;
+          opt.textContent = res.data.name;
           opt.selected = true;
           select.appendChild(opt);
           form.classList.add('hidden');
-          ['nc-name','nc-phone','nc-email','nc-address'].forEach(id => document.getElementById(id).value = '');
+          ['nc-name','nc-phone','nc-email','nc-address'].forEach(function(id) { document.getElementById(id).value = ''; });
+        } else {
+          const msg = res.data.errors ? res.data.errors.join(', ') : 'Error al guardar el cliente.';
+          error.textContent = msg;
+          error.classList.remove('hidden');
         }
+      })
+      .catch(function() {
         saveBtn.textContent = 'Guardar y seleccionar';
         saveBtn.disabled = false;
-      })
-      .catch(() => { saveBtn.textContent = 'Guardar y seleccionar'; saveBtn.disabled = false; });
+        error.textContent = 'Error de conexión. Intenta de nuevo.';
+        error.classList.remove('hidden');
+      });
     });
   }
 })();
