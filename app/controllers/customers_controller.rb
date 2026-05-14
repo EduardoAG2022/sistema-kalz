@@ -22,8 +22,14 @@ class CustomersController < ApplicationController
         format.html { redirect_to customers_path, notice: "Cliente creado correctamente." }
         format.json { render json: { id: @customer.id, name: @customer.name } }
       else
+        existing = find_duplicate_customer
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: { errors: @customer.errors.full_messages }, status: :unprocessable_entity }
+        format.json {
+          render json: {
+            errors: @customer.errors.full_messages,
+            existing: existing ? { id: existing.id, name: existing.name } : nil
+          }, status: :unprocessable_entity
+        }
       end
     end
   end
@@ -48,6 +54,15 @@ class CustomersController < ApplicationController
 
   def set_customer
     @customer = Customer.find(params[:id])
+  end
+
+  def find_duplicate_customer
+    p = customer_params
+    return nil unless p[:email].present? || p[:phone].present?
+    conditions = []
+    conditions << Customer.where("LOWER(email) = ?", p[:email].downcase) if p[:email].present?
+    conditions << Customer.where(phone: p[:phone]) if p[:phone].present?
+    conditions.reduce(:or).first
   end
 
   def customer_params

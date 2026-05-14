@@ -19,19 +19,47 @@
       id: "customer-select" %>
 
     <%# Formulario rápido de cliente %>
-    <div id="new-customer-form" class="hidden mt-3 p-4 bg-indigo-50 border border-indigo-200 rounded-lg space-y-3">
-      <p class="text-sm font-medium text-indigo-800">Nuevo cliente</p>
-      <div class="grid grid-cols-2 gap-3">
-        <input type="text" id="nc-name" placeholder="Nombre *" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <input type="text" id="nc-phone" placeholder="Teléfono" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <input type="email" id="nc-email" placeholder="Email" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <input type="text" id="nc-address" placeholder="Dirección" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <div id="new-customer-form" class="hidden mt-3 rounded-lg border overflow-hidden">
+
+      <%# Estado: éxito %>
+      <div id="nc-success" class="hidden p-4 bg-green-50 border-green-200 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-green-700">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="text-sm font-medium">Cliente <strong id="nc-success-name"></strong> creado y seleccionado</span>
+        </div>
+        <button type="button" id="nc-add-another" class="text-xs text-green-700 underline hover:no-underline ml-4">+ Agregar otro</button>
       </div>
-      <div class="flex gap-2">
-        <button type="button" id="save-new-customer" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Guardar y seleccionar</button>
-        <button type="button" id="cancel-new-customer" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Cancelar</button>
+
+      <%# Estado: duplicado encontrado %>
+      <div id="nc-duplicate" class="hidden p-4 bg-yellow-50 border-yellow-200">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <div class="flex-1">
+            <p class="text-sm text-yellow-800">Ya existe un cliente con ese email o teléfono: <strong id="nc-duplicate-name"></strong></p>
+            <div class="flex gap-2 mt-2">
+              <button type="button" id="nc-use-existing" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-3 py-1.5 rounded-lg">Seleccionar este cliente</button>
+              <button type="button" id="nc-ignore-duplicate" class="text-xs text-yellow-600 hover:text-yellow-800 px-2 py-1.5">Crear de todas formas</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <p id="nc-error" class="text-xs text-red-600 hidden"></p>
+
+      <%# Estado: formulario %>
+      <div id="nc-fields" class="p-4 bg-indigo-50 border-indigo-200 space-y-3">
+        <p class="text-sm font-medium text-indigo-800">Nuevo cliente</p>
+        <div class="grid grid-cols-2 gap-3">
+          <input type="text" id="nc-name" placeholder="Nombre *" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <input type="text" id="nc-phone" placeholder="Teléfono" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <input type="email" id="nc-email" placeholder="Email" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <input type="text" id="nc-address" placeholder="Dirección" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="flex gap-2">
+          <button type="button" id="save-new-customer" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Guardar y seleccionar</button>
+          <button type="button" id="cancel-new-customer" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Cancelar</button>
+        </div>
+        <p id="nc-error" class="text-xs text-red-600 hidden"></p>
+      </div>
+
     </div>
   </div>
 
@@ -144,18 +172,82 @@
   updateTotal();
 
   // Cliente rápido
-  const toggleBtn = document.getElementById('toggle-new-customer');
-  const cancelBtn = document.getElementById('cancel-new-customer');
-  const saveBtn = document.getElementById('save-new-customer');
-  const form = document.getElementById('new-customer-form');
-  const select = document.getElementById('customer-select');
+  const toggleBtn  = document.getElementById('toggle-new-customer');
+  const cancelBtn  = document.getElementById('cancel-new-customer');
+  const saveBtn    = document.getElementById('save-new-customer');
+  const ncForm     = document.getElementById('new-customer-form');
+  const ncFields   = document.getElementById('nc-fields');
+  const ncSuccess  = document.getElementById('nc-success');
+  const ncDuplicate = document.getElementById('nc-duplicate');
+  const custSelect = document.getElementById('customer-select');
 
-  if (toggleBtn) toggleBtn.addEventListener('click', function() { form.classList.toggle('hidden'); });
-  if (cancelBtn) cancelBtn.addEventListener('click', function() { form.classList.add('hidden'); });
+  function ncReset() {
+    ['nc-name','nc-phone','nc-email','nc-address'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('nc-error').classList.add('hidden');
+    ncSuccess.classList.add('hidden');
+    ncDuplicate.classList.add('hidden');
+    ncFields.classList.remove('hidden');
+    ncForm.classList.remove('border-green-200','border-yellow-200');
+    ncForm.classList.add('border-indigo-200');
+  }
+
+  function ncSelectCustomer(id, name) {
+    var existing = custSelect.querySelector('option[value="' + id + '"]');
+    if (!existing) {
+      var opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = name;
+      custSelect.appendChild(opt);
+    }
+    custSelect.value = id;
+  }
+
+  function ncShowSuccess(name) {
+    ncFields.classList.add('hidden');
+    ncDuplicate.classList.add('hidden');
+    ncForm.classList.remove('border-indigo-200','border-yellow-200');
+    ncForm.classList.add('border-green-200');
+    document.getElementById('nc-success-name').textContent = name;
+    ncSuccess.classList.remove('hidden');
+  }
+
+  function ncShowDuplicate(existingId, existingName) {
+    ncFields.classList.add('hidden');
+    ncSuccess.classList.add('hidden');
+    ncForm.classList.remove('border-indigo-200','border-green-200');
+    ncForm.classList.add('border-yellow-200');
+    document.getElementById('nc-duplicate-name').textContent = existingName;
+    ncDuplicate.classList.remove('hidden');
+
+    document.getElementById('nc-use-existing').onclick = function() {
+      ncSelectCustomer(existingId, existingName);
+      ncForm.classList.add('hidden');
+      ncReset();
+    };
+
+    document.getElementById('nc-ignore-duplicate').onclick = function() {
+      ncDuplicate.classList.add('hidden');
+      ncFields.classList.remove('hidden');
+      ncForm.classList.remove('border-yellow-200');
+      ncForm.classList.add('border-indigo-200');
+      document.getElementById('nc-phone').value = '';
+      document.getElementById('nc-email').value = '';
+    };
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', function() {
+    ncReset();
+    ncForm.classList.toggle('hidden');
+  });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() {
+    ncForm.classList.add('hidden');
+    ncReset();
+  });
+  document.getElementById('nc-add-another') && document.getElementById('nc-add-another').addEventListener('click', ncReset);
 
   if (saveBtn) {
     saveBtn.addEventListener('click', function() {
-      const name = document.getElementById('nc-name').value.trim();
+      const name  = document.getElementById('nc-name').value.trim();
       const error = document.getElementById('nc-error');
       if (!name) { error.textContent = 'El nombre es requerido.'; error.classList.remove('hidden'); return; }
       error.classList.add('hidden');
@@ -177,13 +269,10 @@
         saveBtn.textContent = 'Guardar y seleccionar';
         saveBtn.disabled = false;
         if (res.ok && res.data.id) {
-          const opt = document.createElement('option');
-          opt.value = res.data.id;
-          opt.textContent = res.data.name;
-          opt.selected = true;
-          select.appendChild(opt);
-          form.classList.add('hidden');
-          ['nc-name','nc-phone','nc-email','nc-address'].forEach(function(id) { document.getElementById(id).value = ''; });
+          ncSelectCustomer(res.data.id, res.data.name);
+          ncShowSuccess(res.data.name);
+        } else if (res.data.existing) {
+          ncShowDuplicate(res.data.existing.id, res.data.existing.name);
         } else {
           const msg = res.data.errors ? res.data.errors.join(', ') : 'Error al guardar el cliente.';
           error.textContent = msg;
