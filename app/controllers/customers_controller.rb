@@ -2,7 +2,7 @@ class CustomersController < ApplicationController
   before_action :set_customer, only: %i[show edit update destroy]
 
   def index
-    @customers = Customer.order(:name)
+    @customers = Customer.includes(:orders).order(:name)
     @customers = @customers.where("name ILIKE ? OR email ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
     @pagy, @customers = pagy(@customers, items: 20)
   end

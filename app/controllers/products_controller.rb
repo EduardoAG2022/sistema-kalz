@@ -17,7 +17,7 @@ class ProductsController < ApplicationController
   def create
     @product = Product.new(product_params)
     if @product.save
-      redirect_to products_path, notice: "Producto creado correctamente."
+      redirect_to @product, notice: "Producto creado correctamente."
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +28,7 @@ class ProductsController < ApplicationController
 
   def update
     if @product.update(product_params)
-      redirect_to products_path, notice: "Producto actualizado correctamente."
+      redirect_to @product, notice: "Producto actualizado correctamente."
     else
       render :edit, status: :unprocessable_entity
     end

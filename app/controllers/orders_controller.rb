@@ -18,7 +18,6 @@ class OrdersController < ApplicationController
     @total_period = @orders.completed.sum(:total)
     @count_completed = @orders.completed.count
     @count_pending = @orders.pending.count
-    @recent_orders = @orders.limit(5)
     @pagy, @orders = pagy(@orders, items: 20)
   end
 
@@ -27,7 +26,7 @@ class OrdersController < ApplicationController
   end
 
   def new
-    @order = Order.new
+    @order = Order.new(customer_id: params[:customer_id])
     @order.order_items.build
     @customers = Customer.order(:name)
     @products = Product.order(:name)
@@ -66,11 +65,15 @@ class OrdersController < ApplicationController
   end
 
   def complete
+    insufficient = @order.order_items.includes(:product).select { |i| i.product.stock < i.quantity }
+    if insufficient.any?
+      names = insufficient.map { |i| "#{i.product.name} (disponible: #{i.product.stock})" }.join(", ")
+      return redirect_to @order, alert: "Stock insuficiente para: #{names}"
+    end
+
     if @order.update(status: :completed)
-      @order.order_items.each do |item|
-        item.product.decrement!(:stock, item.quantity)
-      end
-      redirect_to @order, notice: "Pedido marcado como completado. Stock actualizado."
+      @order.order_items.each { |item| item.product.decrement!(:stock, item.quantity) }
+      redirect_to @order, notice: "Pedido completado. Stock actualizado."
     else
       redirect_to @order, alert: "No se pudo completar el pedido."
     end
