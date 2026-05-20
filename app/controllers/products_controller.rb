@@ -2,8 +2,15 @@ class ProductsController < ApplicationController
   before_action :set_product, only: %i[show edit update destroy]
 
   def index
-    @products = Product.order(:name)
+    @products = Product.with_attached_photo.order(:name)
     @products = @products.where("name ILIKE ?", "%#{params[:search]}%") if params[:search].present?
+
+    case params[:stock_filter]
+    when "in"  then @products = @products.where("stock > 0")
+    when "low" then @products = @products.where("stock > 0 AND stock <= min_stock")
+    when "out" then @products = @products.where("stock <= 0")
+    end
+
     @pagy, @products = pagy(@products, items: 20)
   end
 
