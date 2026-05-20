@@ -1,92 +1,96 @@
-<% content_for :title, "Compras — Kalz" %>
+<% content_for :title, "Compras" %>
 
-<div class="space-y-5">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-900">Compras</h1>
-    <%= link_to new_purchase_path, class: "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-      Registrar compra
-    <% end %>
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Órdenes de compra</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Gestiona tus compras e inventario entrante</p>
   </div>
-
-  <%# Tarjetas de totales %>
-  <div class="grid grid-cols-2 gap-4">
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-      <p class="text-xs text-gray-500 mb-1">Total invertido</p>
-      <p class="text-2xl font-bold text-gray-900">$<%= number_with_delimiter(@total_invested.to_f.round(2)) %></p>
-      <p class="text-xs text-gray-400 mt-1">en todas las compras</p>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-      <p class="text-xs text-gray-500 mb-1">Unidades compradas</p>
-      <p class="text-2xl font-bold text-indigo-600"><%= number_with_delimiter(@total_units) %></p>
-      <p class="text-xs text-gray-400 mt-1">en todas las compras</p>
-    </div>
-  </div>
-
-  <%# Filtro por producto %>
-  <%= form_with url: purchases_path, method: :get, class: "flex items-center gap-3" do |f| %>
-    <div class="flex-1 max-w-xs">
-      <%= f.select :product_id,
-        options_for_select([["Todos los productos", ""]] + @products.map { |p| [p.name, p.id] }, params[:product_id]),
-        {},
-        class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-    </div>
-    <%= f.submit "Filtrar", class: "px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg cursor-pointer" %>
-    <% if params[:product_id].present? %>
-      <%= link_to "Limpiar", purchases_path, class: "text-sm text-gray-400 hover:text-gray-600" %>
-    <% end %>
+  <%= link_to new_purchase_path, class: "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Nueva orden
   <% end %>
+</div>
 
-  <%# Tabla %>
+<%# Summary cards %>
+<div class="grid grid-cols-2 gap-4 mb-6">
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total unidades</p>
+    <p class="text-2xl font-bold text-gray-900"><%= number_with_delimiter(@total_units) %></p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total invertido</p>
+    <p class="text-2xl font-bold text-gray-900">$<%= number_with_precision(@total_invested, precision: 2, delimiter: ',') %></p>
+  </div>
+</div>
+
+<%# Status filter tabs %>
+<div class="flex items-center gap-1 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
+  <%= link_to purchases_path, class: "px-3 py-1.5 rounded-md text-sm font-medium #{params[:status].blank? ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}" do %>
+    Todas
+  <% end %>
+  <%= link_to purchases_path(status: "ordered"), class: "px-3 py-1.5 rounded-md text-sm font-medium #{params[:status] == 'ordered' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}" do %>
+    Pedido
+  <% end %>
+  <%= link_to purchases_path(status: "in_transit"), class: "px-3 py-1.5 rounded-md text-sm font-medium #{params[:status] == 'in_transit' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}" do %>
+    En camino
+  <% end %>
+  <%= link_to purchases_path(status: "in_stock"), class: "px-3 py-1.5 rounded-md text-sm font-medium #{params[:status] == 'in_stock' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}" do %>
+    En stock
+  <% end %>
+</div>
+
+<% if @purchases.empty? %>
+  <div class="text-center py-16 text-gray-400">
+    <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    <p class="text-sm font-medium">No hay órdenes de compra</p>
+    <p class="text-xs mt-1"><%= link_to "Crear la primera", new_purchase_path, class: "text-indigo-600 hover:underline" %></p>
+  </div>
+<% else %>
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
     <table class="w-full text-sm">
-      <thead>
-        <tr class="bg-gray-50 border-b border-gray-200">
-          <th class="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
-          <th class="text-left px-4 py-3 font-medium text-gray-600">Producto</th>
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Orden</th>
           <th class="text-left px-4 py-3 font-medium text-gray-600">Proveedor</th>
-          <th class="text-right px-4 py-3 font-medium text-gray-600">Unidades</th>
-          <th class="text-right px-4 py-3 font-medium text-gray-600">Costo unit.</th>
-          <th class="text-right px-4 py-3 font-medium text-gray-600">Total</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Productos</th>
+          <th class="text-right px-4 py-3 font-medium text-gray-600">Total invertido</th>
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-50">
+      <tbody class="divide-y divide-gray-100">
         <% @purchases.each do |purchase| %>
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-500 whitespace-nowrap">
-              <%= purchase.purchased_at.strftime("%d %b %Y") %>
-            </td>
             <td class="px-4 py-3">
-              <%= link_to purchase.product.name, product_path(purchase.product), class: "font-medium text-gray-900 hover:text-indigo-600" %>
+              <%= link_to purchase.name, purchase_path(purchase), class: "font-medium text-indigo-700 hover:underline" %>
             </td>
-            <td class="px-4 py-3 text-gray-600"><%= purchase.supplier.presence || "—" %></td>
-            <td class="px-4 py-3 text-right">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
-                +<%= number_with_delimiter(purchase.quantity) %> uds.
+            <td class="px-4 py-3 text-gray-500">
+              <% if purchase.supplier %>
+                <%= link_to purchase.supplier.name, supplier_path(purchase.supplier), class: "hover:text-indigo-600" %>
+              <% else %>
+                <span class="text-gray-400">—</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-gray-500"><%= purchase.purchased_at&.strftime("%d/%m/%Y") %></td>
+            <td class="px-4 py-3">
+              <% badge_class = case purchase.status
+                when "ordered" then "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-300"
+                when "in_transit" then "bg-blue-50 text-blue-700 ring-1 ring-blue-300"
+                when "in_stock" then "bg-green-50 text-green-700 ring-1 ring-green-300"
+                end %>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <%= badge_class %>">
+                <%= { "ordered" => "Pedido", "in_transit" => "En camino", "in_stock" => "En stock" }[purchase.status] %>
               </span>
             </td>
-            <td class="px-4 py-3 text-right text-gray-700">$<%= number_with_delimiter(purchase.unit_cost) %></td>
-            <td class="px-4 py-3 text-right font-semibold text-gray-900">$<%= number_with_delimiter(purchase.total_cost.round(2)) %></td>
-            <td class="px-4 py-3">
-              <div class="flex items-center justify-end gap-1">
-                <%= link_to purchase_path(purchase), class: "p-1.5 text-gray-400 hover:text-indigo-600 rounded" do %>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                <% end %>
-                <%= button_to purchase_path(purchase), method: :delete,
-                  data: { turbo_confirm: "¿Eliminar esta compra? El stock del producto se reducirá en #{purchase.quantity} uds." },
-                  class: "p-1.5 text-gray-400 hover:text-red-600 rounded" do %>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <% end %>
-              </div>
+            <td class="px-4 py-3 text-right text-gray-600"><%= purchase.purchase_items.size %></td>
+            <td class="px-4 py-3 text-right font-medium text-gray-900">
+              $<%= number_with_precision(purchase.total_invested, precision: 2, delimiter: ',') %>
             </td>
-          </tr>
-        <% end %>
-        <% if @purchases.empty? %>
-          <tr>
-            <td colspan="7" class="px-4 py-10 text-center text-gray-400">
-              No hay compras registradas.
-              <%= link_to "Registra la primera", new_purchase_path, class: "text-indigo-600 hover:underline" %>.
+            <td class="px-4 py-3 text-right">
+              <%= link_to purchase_path(purchase), class: "text-gray-400 hover:text-indigo-600" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <% end %>
             </td>
           </tr>
         <% end %>
@@ -94,5 +98,7 @@
     </table>
   </div>
 
-  <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
-</div>
+  <div class="mt-4">
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  </div>
+<% end %>

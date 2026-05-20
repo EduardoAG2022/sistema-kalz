@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_20_024803) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_20_030756) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -83,16 +83,37 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_20_024803) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "purchases", force: :cascade do |t|
+  create_table "purchase_items", force: :cascade do |t|
+    t.bigint "purchase_id", null: false
     t.bigint "product_id", null: false
-    t.string "supplier"
     t.integer "quantity", default: 1, null: false
-    t.decimal "unit_cost", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "unit_cost", precision: 10, scale: 2
+    t.decimal "sale_price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_purchase_items_on_product_id"
+    t.index ["purchase_id"], name: "index_purchase_items_on_purchase_id"
+  end
+
+  create_table "purchases", force: :cascade do |t|
     t.date "purchased_at"
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["product_id"], name: "index_purchases_on_product_id"
+    t.string "name"
+    t.bigint "supplier_id"
+    t.integer "status", default: 0, null: false
+    t.index ["supplier_id"], name: "index_purchases_on_supplier_id"
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.string "name"
+    t.string "contact_name"
+    t.string "email"
+    t.string "phone"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -112,5 +133,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_20_024803) do
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "customers"
-  add_foreign_key "purchases", "products"
+  add_foreign_key "purchase_items", "products"
+  add_foreign_key "purchase_items", "purchases"
 end

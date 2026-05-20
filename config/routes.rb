@@ -10,7 +10,13 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#index", as: :dashboard
 
   resources :products
-  resources :purchases
+  resources :suppliers
+  resources :purchases do
+    member do
+      patch :mark_in_transit
+      patch :mark_in_stock
+    end
+  end
   resources :customers
   resources :orders do
     member do

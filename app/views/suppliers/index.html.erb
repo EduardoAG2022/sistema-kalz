@@ -1,0 +1,70 @@
+<% content_for :title, "Proveedores" %>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Proveedores</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Gestiona tus proveedores</p>
+  </div>
+  <%= link_to new_supplier_path, class: "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Nuevo proveedor
+  <% end %>
+</div>
+
+<%# Search %>
+<form method="get" class="mb-4">
+  <div class="relative max-w-sm">
+    <input type="text" name="search" value="<%= params[:search] %>" placeholder="Buscar proveedor..." class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+  </div>
+</form>
+
+<% if @suppliers.empty? %>
+  <div class="text-center py-16 text-gray-400">
+    <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    <p class="text-sm font-medium">No hay proveedores registrados</p>
+    <p class="text-xs mt-1"><%= link_to "Crear el primero", new_supplier_path, class: "text-indigo-600 hover:underline" %></p>
+  </div>
+<% else %>
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Contacto</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Email</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Teléfono</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-600">Compras</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @suppliers.each do |supplier| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">
+              <%= link_to supplier.name, supplier_path(supplier), class: "font-medium text-indigo-700 hover:underline" %>
+            </td>
+            <td class="px-4 py-3 text-gray-600"><%= supplier.contact_name.presence || "—" %></td>
+            <td class="px-4 py-3 text-gray-600"><%= supplier.email.presence || "—" %></td>
+            <td class="px-4 py-3 text-gray-600"><%= supplier.phone.presence || "—" %></td>
+            <td class="px-4 py-3 text-gray-600"><%= supplier.purchases.count %></td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <%= link_to edit_supplier_path(supplier), class: "text-gray-400 hover:text-indigo-600" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <% end %>
+                <%= button_to supplier_path(supplier), method: :delete, data: { turbo_confirm: "¿Eliminar proveedor #{supplier.name}?" }, class: "text-gray-400 hover:text-red-500 bg-transparent border-0 cursor-pointer p-0" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-4">
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  </div>
+<% end %>
